@@ -6,6 +6,7 @@ import java.util.List;
 import javax.swing.*;
 
 import business.HotelManager;
+import core.Helper;
 import entity.Hotel;
 import view.panels.BaseUpdateView;
 
@@ -98,26 +99,23 @@ public class HotelUpdateView extends BaseUpdateView<Hotel> {
 
     @Override
     protected boolean validateFields() {
-        // Basic validation
-        if (field_hotel_name.getText().trim().isEmpty() ||
-                field_country.getText().trim().isEmpty() ||
-                field_city.getText().trim().isEmpty() ||
-                field_district.getText().trim().isEmpty() ||
-                field_address.getText().trim().isEmpty() ||
-                field_phone.getText().trim().isEmpty() ||
-                field_email.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all fields.");
-            return false;
-        }
-        return true;
+        return !Helper.isFieldListEmpty(field_hotel_name.getText(),
+                                        field_address.getText(),
+                                        field_country.getText(),
+                                        field_city.getText(),
+                                        field_email.getText(),
+                                        field_phone.getText(),
+                                        field_district.getText(),
+                                        String.valueOf(slider_stars.getValue())
+        );
     }
+
 
     @Override
     protected Hotel setFields(Hotel entity) {
         if (entity == null) {
             entity = new Hotel();
         }
-
         entity.setName(field_hotel_name.getText());
         entity.setCountry(field_country.getText());
         entity.setCity(field_city.getText());

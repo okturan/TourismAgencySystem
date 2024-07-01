@@ -7,7 +7,7 @@ public class Hotel extends BaseEntity {
     private String phone;
     private String email;
     private int stars;
-    private String addressLine; // renamed from 'address'
+    private String addressLine;
     private String country;
     private String city;
     private String district;
