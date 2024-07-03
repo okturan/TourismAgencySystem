@@ -1,6 +1,7 @@
 package business;
 
 import java.util.ArrayList;
+
 import dao.ReservationDao;
 import entity.Reservation;
 
@@ -13,15 +14,14 @@ public class ReservationManager extends BaseManager<Reservation> {
     public ArrayList<Object[]> formatDataForTable(ArrayList<Reservation> reservations) {
         ArrayList<Object[]> reservationRows = new ArrayList<>();
         for (Reservation reservation : reservations) {
-            Object[] rowObject = new Object[] {
+            Object[] rowObject = new Object[]{
                     reservation.getId(),
-                    reservation.getRoom(),
-                    reservation.getPrimaryGuest(),
+                    reservation.getRoom().getName() + " - " + reservation.getRoom().getHotel().getName(),
                     reservation.getStartDate(),
                     reservation.getEndDate(),
                     reservation.getCalculatedCostUsd(),
-                    reservation.getNumAdults(),
-                    reservation.getNumChildren()
+                    reservation.getFullName(),
+                    reservation.getEmail()
             };
             reservationRows.add(rowObject);
         }

@@ -20,11 +20,11 @@ public abstract class BaseUpdateView<
         this.manager = manager;
     }
 
-    public void setBtn_save(JButton btn_save) {
+    public void setButton_Save(JButton btn_save) {
         this.button_save = btn_save;
     }
 
-    public void setButton_cancel(JButton button_cancel) {
+    public void setButton_Cancel(JButton button_cancel) {
         this.button_cancel = button_cancel;
     }
 

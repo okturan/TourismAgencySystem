@@ -1,11 +1,16 @@
 package core;
 
+import com.github.lgooddatepicker.components.DatePicker;
+
 import java.awt.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 
 import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
 public class Helper {
     private static final String DATE_PATTERN = "yyyy-MM-dd";
@@ -102,6 +107,54 @@ public class Helper {
             System.out.println(e.getMessage());
         }
         return null;
+    }
+
+    public static void resizeColumnWidth(JTable table) {
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(0).setMaxWidth(35);
+        columnModel.getColumn(0).setMinWidth(25);
+        for (int column = 1; column < table.getColumnCount(); column++) {
+            int width = 25;
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width + 1, width);
+            }
+            if (width > 300) width = 300;
+            columnModel.getColumn(column).setPreferredWidth(width);
+        }
+    }
+
+    public static void addDateChangeListeners(DatePicker startDatePicker, DatePicker endDatePicker, JPanel container) {
+        // Add a date change listener to the start date picker
+        startDatePicker.addDateChangeListener(event -> {
+            LocalDate startDate = event.getNewDate();
+            LocalDate endDate = endDatePicker.getDate();
+            // Set the lower bound of the end date picker based on the start date
+            if (startDate != null) {
+                endDatePicker.getSettings().setDateRangeLimits(startDate.plusDays(1), null);
+                // Check if the start date is after the end date
+                if (endDate != null && startDate.isAfter(endDate)) {
+                    JOptionPane.showMessageDialog(container, "Start date cannot be after the end date.", "Date Error", JOptionPane.ERROR_MESSAGE);
+                    startDatePicker.setDate(startDatePicker.getDate());  // Revert to previous date
+                } else {
+                    System.out.println("Start Date changed to: " + startDate);
+                }
+            }
+        });
+
+        // Add a date change listener to the end date picker
+        endDatePicker.addDateChangeListener(event -> {
+            LocalDate startDate = startDatePicker.getDate();
+            LocalDate endDate = event.getNewDate();
+            // No need to set range limits here, only need to check if the end date is valid
+            if (startDate != null && endDate != null && endDate.isBefore(startDate.plusDays(1))) {
+                JOptionPane.showMessageDialog(container, "End date cannot be before the start date.", "Date Error", JOptionPane.ERROR_MESSAGE);
+                endDatePicker.setDate(endDatePicker.getDate());  // Revert to previous date
+            } else {
+                System.out.println("End Date changed to: " + endDate);
+            }
+        });
     }
 
 }

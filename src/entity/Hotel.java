@@ -1,6 +1,9 @@
 package entity;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class Hotel extends BaseEntity {
     private String name;
@@ -13,6 +16,15 @@ public class Hotel extends BaseEntity {
     private String district;
     private List<String> amenities;
     private List<String> boardTypes;
+    private List<Season> seasons;
+
+    public List<Season> getSeasons() {
+        return seasons;
+    }
+
+    public void setSeasons(List<Season> seasons) {
+        this.seasons = seasons;
+    }
 
     public String getName() {
         return name;
@@ -92,6 +104,49 @@ public class Hotel extends BaseEntity {
 
     public void setBoardTypes(List<String> boardTypes) {
         this.boardTypes = boardTypes;
+    }
+
+    public void removeSeasonById(int seasonId) {
+        if (seasons != null) {
+            Iterator<Season> iterator = seasons.iterator();
+            while (iterator.hasNext()) {
+                Season season = iterator.next();
+                if (Objects.equals(season.getId(), seasonId)) {
+                    iterator.remove();
+                    return;
+                }
+            }
+        }
+    }
+
+    public void addSeason(Season newSeason) {
+        if (seasons == null) {
+            seasons = new ArrayList<>();
+        }
+        seasons.add(newSeason);
+    }
+
+    public void updateSeason(Season updatedSeason) {
+        if (seasons != null) {
+            for (int i = 0; i < seasons.size(); i++) {
+                Season season = seasons.get(i);
+                if (Objects.equals(season.getId(), updatedSeason.getId())) {
+                    seasons.set(i, updatedSeason);
+                    return;
+                }
+            }
+        }
+    }
+
+    public Season matchSeasonById(int seasonId) {
+        if (seasons != null) {
+            for (Season season : seasons) {
+                if (Objects.equals(season.getId(), seasonId)) {
+                    return season;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

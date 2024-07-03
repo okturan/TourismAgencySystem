@@ -11,13 +11,11 @@ public class RoomTableHandler extends BaseTableHandler<Room, RoomManager, RoomUp
 
     private static final String[] HEADERS = {
             "id",
-            "name",
+            "Hotel Room",
             "roomType",
             "size",
             "capacity",
             "stock",
-            "adult price",
-            "child price"
     };
 
     private final Hotel hotel;
@@ -29,7 +27,7 @@ public class RoomTableHandler extends BaseTableHandler<Room, RoomManager, RoomUp
     }
 
     @Override
-    protected void getEntities() {
+    public void getEntities() {
         loadTable(getManager().getHotelRooms(hotel));
     }
 

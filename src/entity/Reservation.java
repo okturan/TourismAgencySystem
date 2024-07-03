@@ -5,7 +5,10 @@ import java.time.LocalDate;
 
 public class Reservation extends BaseEntity {
     private Room room;
-    private Guest primaryGuest;
+    private String fullName;
+    private String phone;
+    private String email;
+    private String identification;
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal calculatedCostUsd;
@@ -20,12 +23,36 @@ public class Reservation extends BaseEntity {
         this.room = room;
     }
 
-    public Guest getPrimaryGuest() {
-        return primaryGuest;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setPrimaryGuest(Guest primaryGuest) {
-        this.primaryGuest = primaryGuest;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(String identification) {
+        this.identification = identification;
     }
 
     public LocalDate getStartDate() {
@@ -73,7 +100,10 @@ public class Reservation extends BaseEntity {
         return "Reservation{" +
                 "id=" + getId() +
                 ", room=" + room +
-                ", primaryGuest=" + primaryGuest +
+                ", fullName='" + fullName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", identification='" + identification + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", calculatedCostUsd=" + calculatedCostUsd +

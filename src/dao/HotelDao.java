@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entity.Hotel;
+import entity.Season;
 
 public class HotelDao extends BaseDao<Hotel> {
 
@@ -29,8 +31,9 @@ public class HotelDao extends BaseDao<Hotel> {
         hotel.setDistrict(resultSet.getString("district"));
 
         // Fetch amenities and board types
-        hotel.setAmenities(getAmenitiesForHotel(hotel.getId()));
-        hotel.setBoardTypes(getBoardTypesForHotel(hotel.getId()));
+        hotel.setAmenities(getAmenitiesForHotel(hotel));
+        hotel.setBoardTypes(getBoardTypesForHotel(hotel));
+        hotel.setSeasons(getSeasonsForHotel(hotel));
 
         return hotel;
     }
@@ -47,17 +50,84 @@ public class HotelDao extends BaseDao<Hotel> {
         preparedStatement.setString(8, hotel.getDistrict());
     }
 
-    private List<String> getAmenitiesForHotel(int hotelId) {
+    private List<Season> getSeasonsForHotel(Hotel hotel) {
+        List<Season> seasons = new ArrayList<>();
+        String query = "SELECT * FROM seasons WHERE hotel_id = ?";
+
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+            preparedStatement.setInt(1, hotel.getId());
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Season season = new Season();
+                    season.setId(resultSet.getInt("id"));
+                    season.setHotel(hotel);
+                    season.setName(resultSet.getString("name"));
+                    season.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                    season.setEndDate(resultSet.getDate("end_date").toLocalDate());
+                    season.setRateMultiplier(resultSet.getInt("rate_multiplier"));
+                    seasons.add(season);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return seasons;
+    }
+
+    public boolean deleteSeason(int id) {
+        try {
+            String query = "DELETE FROM seasons WHERE id = ?";
+            try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+                preparedStatement.setInt(1, id);
+                return preparedStatement.executeUpdate() != -1;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean saveSeason(Season season) {
+        String query = "INSERT INTO seasons (name, start_date, end_date, rate_multiplier, hotel_id) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+            preparedStatement.setString(1, season.getName());
+            preparedStatement.setDate(2, Date.valueOf(season.getStartDate()));
+            preparedStatement.setDate(3, Date.valueOf(season.getEndDate()));
+            preparedStatement.setFloat(4, season.getRateMultiplier());
+            preparedStatement.setInt(5, season.getHotel().getId());
+            return preparedStatement.executeUpdate() != -1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateSeason(Season season) {
+        String query = "UPDATE seasons SET name = ?, start_date = ?, end_date = ?, rate_multiplier = ? WHERE id = ?";
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+            preparedStatement.setString(1, season.getName());
+            preparedStatement.setDate(2, Date.valueOf(season.getStartDate()));
+            preparedStatement.setDate(3, Date.valueOf(season.getEndDate()));
+            preparedStatement.setFloat(4, season.getRateMultiplier());
+            preparedStatement.setInt(5, season.getId());
+            return preparedStatement.executeUpdate() != -1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<String> getAmenitiesForHotel(Hotel hotel) {
         List<String> amenities = new ArrayList<>();
         String query = "SELECT ha.name FROM hotel_amenities ha " +
                 "JOIN hotels_hotel_amenities hha ON ha.id = hha.hotel_amenity_id " +
                 "WHERE hha.hotel_id = ?";
 
-        try (PreparedStatement stmt = getConnection().prepareStatement(query)) {
-            stmt.setInt(1, hotelId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    amenities.add(rs.getString("name"));
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+            preparedStatement.setInt(1, hotel.getId());
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    amenities.add(resultSet.getString("name"));
                 }
             }
         } catch (SQLException e) {
@@ -66,14 +136,14 @@ public class HotelDao extends BaseDao<Hotel> {
         return amenities;
     }
 
-    private List<String> getBoardTypesForHotel(int hotelId) {
+    private List<String> getBoardTypesForHotel(Hotel hotel) {
         List<String> boardTypes = new ArrayList<>();
         String query = "SELECT bt.name FROM board_types bt " +
                 "JOIN hotels_board_types hbt ON bt.id = hbt.board_type_id " +
                 "WHERE hbt.hotel_id = ?";
 
         try (PreparedStatement stmt = getConnection().prepareStatement(query)) {
-            stmt.setInt(1, hotelId);
+            stmt.setInt(1, hotel.getId());
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     boardTypes.add(rs.getString("name"));
@@ -112,9 +182,9 @@ public class HotelDao extends BaseDao<Hotel> {
             }
 
             // Now we can update amenities and board types after we have an ID
-            result = updateAmenities(hotel.getId(), hotel.getAmenities());
+            result = updateAmenities(hotel, hotel.getAmenities());
             if (result) {
-                result = updateBoardTypes(hotel.getId(), hotel.getBoardTypes());
+                result = updateBoardTypes(hotel, hotel.getBoardTypes());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -142,9 +212,9 @@ public class HotelDao extends BaseDao<Hotel> {
                 throw new SQLException("Updating hotel failed, no rows affected.");
             }
 
-            result = updateAmenities(hotel.getId(), hotel.getAmenities());
+            result = updateAmenities(hotel, hotel.getAmenities());
             if (result) {
-                result = updateBoardTypes(hotel.getId(), hotel.getBoardTypes());
+                result = updateBoardTypes(hotel, hotel.getBoardTypes());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -157,10 +227,10 @@ public class HotelDao extends BaseDao<Hotel> {
     public boolean delete(int id) {
         try {
             // Delete related board types first
-            deleteAllBoardTypesFromHotel(id);
+            deleteAllBoardTypesFromHotel(findById(id));
 
             // Delete related amenities
-            deleteAllAmenitiesFromHotel(id);
+            deleteAllAmenitiesFromHotel(findById(id));
 
             // Proceed to delete the hotel
             String query = "DELETE FROM " + getTableName() + " WHERE " + getIdColumnName() + " = ?";
@@ -174,12 +244,12 @@ public class HotelDao extends BaseDao<Hotel> {
         return false;
     }
 
-    public boolean updateAmenities(int hotelId, List<String> newAmenities) {
-        List<String> currentAmenities = getAmenitiesForHotel(hotelId);
+    public boolean updateAmenities(Hotel hotel, List<String> newAmenities) {
+        List<String> currentAmenities = getAmenitiesForHotel(hotel);
         // Find amenities to delete
         for (String amenity : currentAmenities) {
             if (!newAmenities.contains(amenity)) {
-                if (!deleteAmenityFromHotel(hotelId, amenity)) {
+                if (!deleteAmenityFromHotel(hotel, amenity)) {
                     return false; // Deletion failed
                 }
             }
@@ -187,7 +257,7 @@ public class HotelDao extends BaseDao<Hotel> {
         // Find amenities to add
         for (String amenity : newAmenities) {
             if (!currentAmenities.contains(amenity)) {
-                if (!addAmenityToHotel(hotelId, amenity)) {
+                if (!addAmenityToHotel(hotel, amenity)) {
                     return false; // Addition failed
                 }
             }
@@ -195,12 +265,12 @@ public class HotelDao extends BaseDao<Hotel> {
         return true;
     }
 
-    public boolean updateBoardTypes(int hotelId, List<String> newBoardTypes) {
-        List<String> currentBoardTypes = getBoardTypesForHotel(hotelId);
+    public boolean updateBoardTypes(Hotel hotel, List<String> newBoardTypes) {
+        List<String> currentBoardTypes = getBoardTypesForHotel(hotel);
         // Find board types to delete
         for (String boardType : currentBoardTypes) {
             if (!newBoardTypes.contains(boardType)) {
-                if (!deleteBoardTypeFromHotel(hotelId, boardType)) {
+                if (!deleteBoardTypeFromHotel(hotel, boardType)) {
                     return false; // Deletion failed
                 }
             }
@@ -208,7 +278,7 @@ public class HotelDao extends BaseDao<Hotel> {
         // Find board types to add
         for (String boardType : newBoardTypes) {
             if (!currentBoardTypes.contains(boardType)) {
-                if (!addBoardTypeToHotel(hotelId, boardType)) {
+                if (!addBoardTypeToHotel(hotel, boardType)) {
                     return false; // Addition failed
                 }
             }
@@ -216,11 +286,11 @@ public class HotelDao extends BaseDao<Hotel> {
         return true;
     }
 
-    public boolean addAmenityToHotel(int hotelId, String amenityName) {
+    public boolean addAmenityToHotel(Hotel hotel, String amenityName) {
         String query = "INSERT INTO hotels_hotel_amenities (hotel_id, hotel_amenity_id) " +
                 "SELECT ?, id FROM hotel_amenities WHERE name = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(query)) {
-            stmt.setInt(1, hotelId);
+            stmt.setInt(1, hotel.getId());
             stmt.setString(2, amenityName);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -229,11 +299,11 @@ public class HotelDao extends BaseDao<Hotel> {
         }
     }
 
-    public boolean addBoardTypeToHotel(int hotelId, String boardTypeName) {
+    public boolean addBoardTypeToHotel(Hotel hotel, String boardTypeName) {
         String query = "INSERT INTO hotels_board_types (hotel_id, board_type_id) " +
                 "SELECT ?, id FROM board_types WHERE name = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(query)) {
-            stmt.setInt(1, hotelId);
+            stmt.setInt(1, hotel.getId());
             stmt.setString(2, boardTypeName);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -242,13 +312,13 @@ public class HotelDao extends BaseDao<Hotel> {
         }
     }
 
-    public boolean deleteAmenityFromHotel(int hotelId, String amenityName) {
+    public boolean deleteAmenityFromHotel(Hotel hotel, String amenityName) {
         String deleteQuery = "DELETE FROM hotels_hotel_amenities " +
                 "WHERE hotel_id = ? " +
                 "AND hotel_amenity_id = (SELECT id FROM hotel_amenities " +
                 "WHERE name = ?)";
         try (PreparedStatement deleteStmt = getConnection().prepareStatement(deleteQuery)) {
-            deleteStmt.setInt(1, hotelId);
+            deleteStmt.setInt(1, hotel.getId());
             deleteStmt.setString(2, amenityName);
             return deleteStmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -257,13 +327,13 @@ public class HotelDao extends BaseDao<Hotel> {
         }
     }
 
-    public boolean deleteBoardTypeFromHotel(int hotelId, String boardTypeName) {
+    public boolean deleteBoardTypeFromHotel(Hotel hotel, String boardTypeName) {
         String deleteQuery = "DELETE FROM hotels_board_types " +
                 "WHERE hotel_id = ? " +
                 "AND board_type_id = (SELECT id FROM board_types " +
                 "WHERE name = ?)";
         try (PreparedStatement deleteStmt = getConnection().prepareStatement(deleteQuery)) {
-            deleteStmt.setInt(1, hotelId);
+            deleteStmt.setInt(1, hotel.getId());
             deleteStmt.setString(2, boardTypeName);
             return deleteStmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -272,10 +342,10 @@ public class HotelDao extends BaseDao<Hotel> {
         }
     }
 
-    private boolean deleteAllAmenitiesFromHotel(int hotelId) {
+    private boolean deleteAllAmenitiesFromHotel(Hotel hotel) {
         String deleteQuery = "DELETE FROM hotels_hotel_amenities WHERE hotel_id = ?";
         try (PreparedStatement deleteStmt = getConnection().prepareStatement(deleteQuery)) {
-            deleteStmt.setInt(1, hotelId);
+            deleteStmt.setInt(1, hotel.getId());
             return deleteStmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -283,10 +353,10 @@ public class HotelDao extends BaseDao<Hotel> {
         }
     }
 
-    private boolean deleteAllBoardTypesFromHotel(int hotelId) {
+    private boolean deleteAllBoardTypesFromHotel(Hotel hotel) {
         String deleteQuery = "DELETE FROM hotels_board_types WHERE hotel_id = ?";
         try (PreparedStatement deleteStmt = getConnection().prepareStatement(deleteQuery)) {
-            deleteStmt.setInt(1, hotelId);
+            deleteStmt.setInt(1, hotel.getId());
             return deleteStmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

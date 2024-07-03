@@ -15,13 +15,11 @@ import entity.BaseEntity;
 
 public abstract class BaseDao<E extends BaseEntity> {
 
-    final Connection connection;
     private final String tableName;
     private ArrayList<String> columnNames;
     private String idColumnName;
 
     public BaseDao(String tableName) {
-        this.connection = Db.getInstance();
         this.tableName = tableName;
         initializeColumnData();
     }
@@ -35,7 +33,7 @@ public abstract class BaseDao<E extends BaseEntity> {
     }
 
     public Connection getConnection() {
-        return connection;
+        return Db.getInstance();
     }
 
     protected int getId(E entity) {
@@ -53,7 +51,7 @@ public abstract class BaseDao<E extends BaseEntity> {
     private void initializeColumnData() {
         columnNames = new ArrayList<>();
         try {
-            DatabaseMetaData metaData = connection.getMetaData();
+            DatabaseMetaData metaData = getConnection().getMetaData();
             try (ResultSet resultSet = metaData.getColumns(null, null, getTableName(), null)) {
                 while (resultSet.next()) {
                     columnNames.add(resultSet.getString("COLUMN_NAME"));
@@ -73,7 +71,7 @@ public abstract class BaseDao<E extends BaseEntity> {
     public ArrayList<E> selectByQuery(String query) {
         System.out.println("Executing selectByQuery: " + query);
         ArrayList<E> entities = new ArrayList<>();
-        try (Statement statement = this.connection.createStatement(); ResultSet resultSet = statement.executeQuery(query)) {
+        try (Statement statement = getConnection().createStatement(); ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
                 entities.add(mapResultSetToEntity(resultSet));
             }
@@ -107,7 +105,7 @@ public abstract class BaseDao<E extends BaseEntity> {
 
     public boolean delete(int id) {
         String query = "DELETE FROM " + getTableName() + " WHERE " + getIdColumnName() + " = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() != -1;
         } catch (SQLException e) {
@@ -123,7 +121,7 @@ public abstract class BaseDao<E extends BaseEntity> {
 
     public E findById(int id) {
         String query = "SELECT * FROM " + getTableName() + " WHERE " + getIdColumnName() + " = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
             preparedStatement.setInt(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -145,17 +143,15 @@ public abstract class BaseDao<E extends BaseEntity> {
 
         String query = "SELECT * FROM " + getTableName() + " WHERE " + whereClause;
 
-        try {
-            ResultSet resultSet;
-            try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
             int index = 1;
             for (Map.Entry<String, Object> entry : columnValues.entrySet()) {
                 preparedStatement.setObject(index++, entry.getValue());
             }
-                resultSet = preparedStatement.executeQuery();
-            }
-            if (resultSet.next()) {
-                entity = mapResultSetToEntity(resultSet);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    entity = mapResultSetToEntity(resultSet);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -164,13 +160,13 @@ public abstract class BaseDao<E extends BaseEntity> {
         return entity;
     }
 
+
     private boolean executeQuery(String query, E entity, boolean isUpdate) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
             setParameters(preparedStatement, entity);
             if (isUpdate) {
                 preparedStatement.setInt(getColumnNames().size() + 1, getId(entity));
             }
-
             return preparedStatement.executeUpdate() != -1;
         } catch (SQLException e) {
             e.printStackTrace();

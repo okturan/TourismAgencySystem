@@ -4,8 +4,8 @@ import javax.swing.*;
 
 import business.HotelManager;
 import entity.Hotel;
-import view.panels.room.RoomPanelView;
 import view.panels.BaseTableHandler;
+import view.panels.room.RoomPanelView;
 
 public class HotelTableHandler extends BaseTableHandler<Hotel, HotelManager, HotelUpdateView> {
 

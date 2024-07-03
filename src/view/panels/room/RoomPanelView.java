@@ -31,5 +31,4 @@ public class RoomPanelView extends BaseLayout {
     }
 
 
-
 }

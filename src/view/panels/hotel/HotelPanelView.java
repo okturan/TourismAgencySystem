@@ -18,5 +18,4 @@ public class HotelPanelView extends JPanel {
         button_add_new_hotel.addActionListener(e -> hotelTableHandler.onAdd());
     }
 
-
 }

@@ -1,9 +1,9 @@
 import core.Helper;
-import view.StaffView;
+import view.LoginView;
 
 public class App {
     public static void main(String[] args) {
         Helper.setTheme();
-        StaffView view = new StaffView();
+        LoginView view = new LoginView();
     }
 }

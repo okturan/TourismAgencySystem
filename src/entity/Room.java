@@ -1,6 +1,5 @@
 package entity;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class Room extends BaseEntity {
@@ -10,9 +9,9 @@ public class Room extends BaseEntity {
     private int sizeSqm;
     private int stock;
     private RoomType roomType;
-    private int adultPriceUsd;
-    private int childPriceUsd;
     private List<String> amenities;
+    private int availableStock;
+    private List<RoomPriceSummary> roomPrices;
 
     public RoomType getRoomType() {
         return roomType;
@@ -20,6 +19,14 @@ public class Room extends BaseEntity {
 
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
+    }
+
+    public int getAvailableStock() {
+        return availableStock;
+    }
+
+    public void setAvailableStock(int availableStock) {
+        this.availableStock = availableStock;
     }
 
     public Hotel getHotel() {
@@ -62,20 +69,19 @@ public class Room extends BaseEntity {
         this.stock = stock;
     }
 
-    public int getAdultPriceUsd() {
-        return adultPriceUsd;
-    }
-
-    public void setAdultPriceUsd(int adultPriceUsd) {
-        this.adultPriceUsd = adultPriceUsd;
-    }
-
-    public int getChildPriceUsd() {
-        return childPriceUsd;
-    }
-
-    public void setChildPriceUsd(int childPriceUsd) {
-        this.childPriceUsd = childPriceUsd;
+    @Override
+    public String toString() {
+        return "Room{" +
+                "hotel=" + hotel +
+                ", name='" + name + '\'' +
+                ", capacity=" + capacity +
+                ", sizeSqm=" + sizeSqm +
+                ", stock=" + stock +
+                ", roomType=" + roomType +
+                ", amenities=" + amenities +
+                ", availableStock=" + availableStock +
+                ", roomPrices=" + roomPrices + // Add this line
+                "} " + super.toString();
     }
 
     public List<String> getAmenities() {
@@ -86,19 +92,12 @@ public class Room extends BaseEntity {
         this.amenities = amenities;
     }
 
-    @Override
-    public String toString() {
-        return "Room{" +
-                "hotel=" + hotel +
-                ", name='" + name + '\'' +
-                ", capacity=" + capacity +
-                ", sizeSqm=" + sizeSqm +
-                ", stock=" + stock +
-                ", roomType=" + roomType +
-                ", adultPriceUsd=" + adultPriceUsd +
-                ", childPriceUsd=" + childPriceUsd +
-                ", amenities=" + amenities +
-                "} " + super.toString();
+    public List<RoomPriceSummary> getRoomPrices() {
+        return roomPrices; // Add this getter
+    }
+
+    public void setRoomPrices(List<RoomPriceSummary> roomPrices) {
+        this.roomPrices = roomPrices; // Add this setter
     }
 
     public enum RoomType {
