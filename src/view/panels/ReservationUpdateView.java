@@ -167,20 +167,21 @@ public class ReservationUpdateView extends BaseUpdateView<Reservation> {
             field_total_cost.setText(reservation.getCalculatedCostUsd().toString());
             field_checkin.setText(reservation.getStartDate().toString());
             field_checkout.setText(reservation.getEndDate().toString());
+            combo_boardtype.setEnabled(false);
         } else {
             field_checkin.setText(startDatePicker.getText());
             field_checkout.setText(endDatePicker.getText());
+            startDatePicker.addDateChangeListener(e -> updateTotalCost());
+            endDatePicker.addDateChangeListener(e -> updateTotalCost());
+
+            List<String> boardTypes = room.getHotel().getBoardTypes();
+            for (String boardType : boardTypes) {
+                combo_boardtype.addItem(boardType);
+            }
+            combo_boardtype.addActionListener(e -> updateTotalCost());
             updateTotalCost();
         }
 
-        List<String> boardTypes = room.getHotel().getBoardTypes();
-        for (String boardType : boardTypes) {
-            combo_boardtype.addItem(boardType);
-        }
-
-        combo_boardtype.addActionListener(e -> updateTotalCost());
-        startDatePicker.addDateChangeListener(e -> updateTotalCost());
-        endDatePicker.addDateChangeListener(e -> updateTotalCost());
 
         disableFields();
     }
