@@ -6,6 +6,7 @@ This project is a comprehensive Hotel Management System built in Java utilizing 
 
 ### For Admins:
 - **User Management**: Admins can manage other users' accounts (create, edit, delete) and assign roles (admin or staff).
+- Demo info: User: **admin** Password: **admin**
 - **Hotel Management**: Admins can add new hotels, edit hotel details, manage seasons and amenities.
 
 ### For Staff:
