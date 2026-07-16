@@ -15,8 +15,32 @@ This project is a comprehensive Hotel Management System built in Java utilizing 
 - **Search Functionality**: Staff can search for rooms based on various filters, such as city, country, hotel name, guest count, and date range.
 
 ## Requirements
-- Java 8 or above
+- Java 14 or newer
 - PostgreSQL database
+
+## Database Setup
+
+Import `tourism.sql`, create a dedicated local database role, and keep its password outside the repository.
+
+```sh
+cp .env.example .env
+# Fill in TOURISM_DB_PASSWORD and adjust the URL/user if needed.
+set -a
+source .env
+set +a
+```
+
+The application requires `TOURISM_DB_URL`, `TOURISM_DB_USER`, and `TOURISM_DB_PASSWORD`. IntelliJ run configurations can instead set `tourism.db.url`, `tourism.db.user`, and `tourism.db.password` as Java system properties. Neither `.env` nor IDE run configurations should be committed.
+
+## Build and Run
+
+The following commands target macOS/Linux:
+
+```sh
+mkdir -p bin
+find src -name '*.java' -print0 | xargs -0 javac --release 14 -cp "postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" -d bin
+java -cp "bin:postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" App
+```
 
 ## Libraries Used
 - **Swing**: For GUI components.
@@ -32,7 +56,7 @@ This project is a comprehensive Hotel Management System built in Java utilizing 
 
 ## Usage
 1. **Login**:
-    - Upon launching the application, you will see a login screen. Use the credentials assigned to you (there should be an existing admin account to start with).
+    - Upon launching the application, you will see a login screen. The sample dump includes `admin` / `admin` for local evaluation only. Replace or remove that account before using the application outside a local development environment, and never expose the sample database to a network.
 
 2. **Admin Functionalities**:
     - Upon successful login as an admin, you can manage users and hotels from the admin dashboard.
