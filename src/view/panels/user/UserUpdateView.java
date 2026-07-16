@@ -1,17 +1,20 @@
 package view.panels.user;
 
+import java.util.Arrays;
+
 import javax.swing.*;
 
 import business.AppUserManager;
 import core.Helper;
 import entity.AppUser;
+import security.PasswordPolicy;
 import view.panels.BaseUpdateView;
 
 public class UserUpdateView extends BaseUpdateView<AppUser> {
 
     private JPanel container;
     private JTextField field_username;
-    private JTextField field_password;
+    private JPasswordField field_password;
     private JTextField field_firstname;
     private JTextField field_lastname;
     private JTextField field_email;
@@ -49,26 +52,44 @@ public class UserUpdateView extends BaseUpdateView<AppUser> {
 
         if (user != null) {
             field_username.setText(user.getUsername());
-            field_password.setText(user.getPassword());
             field_firstname.setText(user.getFirstName());
             field_lastname.setText(user.getLastName());
             field_email.setText(user.getEmail());
+            label_password.setText("New password (leave blank to keep current)");
 
             if (user.getRole().equals("admin")) {
                 adminRadioButton.setSelected(true);
             } else if (user.getRole().equals("staff")) {
                 staffRadioButton.setSelected(true);
             }
+        } else {
+            label_password.setText("Password (12+ characters)");
         }
+        field_password.setText("");
     }
 
     @Override
     protected boolean validateFields() {
-        return !Helper.isFieldListEmpty(field_username.getText(),
-                                        field_password.getText(),
-                                        field_firstname.getText(),
-                                        field_lastname.getText(),
-                                        field_email.getText());
+        char[] password = field_password.getPassword();
+        try {
+            return validateFields(password);
+        } finally {
+            Arrays.fill(password, '\0');
+        }
+    }
+
+    private boolean validateFields(char[] password) {
+        boolean profileIsComplete = !Helper.isFieldListEmpty(
+                field_username.getText(),
+                field_firstname.getText(),
+                field_lastname.getText(),
+                field_email.getText()
+        ) && (adminRadioButton.isSelected() || staffRadioButton.isSelected());
+
+        boolean passwordIsValid = currentEntity == null
+                ? PasswordPolicy.isStrong(password)
+                : password.length == 0 || PasswordPolicy.isStrong(password);
+        return profileIsComplete && passwordIsValid;
     }
 
     @Override
@@ -78,7 +99,6 @@ public class UserUpdateView extends BaseUpdateView<AppUser> {
         }
 
         user.setUsername(field_username.getText());
-        user.setPassword(field_password.getText());
         user.setFirstName(field_firstname.getText());
         user.setLastName(field_lastname.getText());
         user.setEmail(field_email.getText());
@@ -91,5 +111,35 @@ public class UserUpdateView extends BaseUpdateView<AppUser> {
 
         return user;
     }
-}
 
+    @Override
+    protected void save() {
+        char[] password = field_password.getPassword();
+        try {
+            if (!validateFields(password)) {
+                Helper.showMessage(
+                        "Complete every profile field, select a role, and use a 12-256 character password. "
+                                + "Leave the password blank only when keeping an existing one."
+                );
+                return;
+            }
+
+            boolean isNewUser = currentEntity == null;
+            currentEntity = setFields(currentEntity);
+            AppUserManager userManager = (AppUserManager) manager;
+            boolean saved = isNewUser
+                    ? userManager.createUser(currentEntity, password)
+                    : userManager.updateUser(currentEntity, password);
+
+            Helper.showMessage(saved ? "Save Successful" : "Save Error: Erroneous entry");
+            if (saved) {
+                dispose();
+            }
+        } catch (IllegalArgumentException exception) {
+            Helper.showMessage(exception.getMessage());
+        } finally {
+            Arrays.fill(password, '\0');
+            field_password.setText("");
+        }
+    }
+}

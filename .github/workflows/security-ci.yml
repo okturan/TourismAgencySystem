@@ -1,0 +1,77 @@
+name: Security CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: tourism_agency
+          POSTGRES_USER: tourism_app
+          POSTGRES_PASSWORD: tourism_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tourism_app -d tourism_agency"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Verify and load sanitized schema
+        env:
+          PGPASSWORD: tourism_test_password
+        run: |
+          test "$(tr -d '\000' < tourism.sql | wc -c)" -eq "$(wc -c < tourism.sql)"
+          if grep -Eiq '^(COPY|INSERT INTO) public\.(users|hotels|rooms|reservations|room_prices|seasons|hotels_board_types|hotels_hotel_amenities|rooms_room_amenities)' tourism.sql; then
+            echo "Operational data must not be seeded in tourism.sql"
+            exit 1
+          fi
+          psql --host=localhost --port=5432 --username=tourism_app \
+            --dbname=tourism_agency --set=ON_ERROR_STOP=1 --file=tourism.sql
+
+      - name: Compile Java 14 target
+        run: |
+          mkdir -p /tmp/tourism-agency-tests
+          find src test -name '*.java' -print0 | xargs -0 javac --release 14 \
+            -encoding UTF-8 \
+            -cp "postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" \
+            -d /tmp/tourism-agency-tests
+
+      - name: Run unit security checks
+        run: |
+          java -ea -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" security.PasswordHasherTest
+          java -ea -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" business.AppUserPresentationTest
+          java -ea -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" core.DatabaseConfigTest
+
+      - name: Run PostgreSQL security integration checks
+        env:
+          TOURISM_DB_URL: jdbc:postgresql://localhost:5432/tourism_agency
+          TOURISM_DB_USER: tourism_app
+          TOURISM_DB_PASSWORD: tourism_test_password
+        run: >-
+          java -ea
+          -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar"
+          integration.AppUserSecurityIntegrationTest
+
+      - name: Reject password disclosure paths
+        run: |
+          if grep -R 'System\.out\.println(preparedStatement)' src; then exit 1; fi
+          if grep -R 'field_password\.setText(user\.getPassword())' src; then exit 1; fi
+          if grep -R 'new String(this\.fld_password\.getPassword())' src; then exit 1; fi
