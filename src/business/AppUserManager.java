@@ -71,21 +71,19 @@ public class AppUserManager extends BaseManager<AppUser> {
             return false;
         }
 
-        AppUser existing = getUserDao().findById(user.getId());
-        if (existing == null || !hasValidProfile(user)) {
+        if (!hasValidProfile(user)) {
             return false;
         }
 
         try {
             if (password == null || password.length == 0) {
-                user.setPassword(existing.getPassword());
-            } else {
-                PasswordPolicy.requireStrong(password);
-                user.setPassword(PasswordHasher.hash(password));
+                return getUserDao().updateWithoutPassword(user);
             }
+
+            PasswordPolicy.requireStrong(password);
+            user.setPassword(PasswordHasher.hash(password));
             return getUserDao().update(user);
         } finally {
-            existing.setPassword(null);
             user.setPassword(null);
         }
     }

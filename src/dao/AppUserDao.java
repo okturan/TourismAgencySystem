@@ -58,6 +58,23 @@ public class AppUserDao extends BaseDao<AppUser> {
         }
     }
 
+    public boolean updateWithoutPassword(AppUser user) {
+        String query = "UPDATE users SET username = ?, first_name = ?, last_name = ?, email = ?, role = ? "
+                + "WHERE id = ?";
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getFirstName());
+            preparedStatement.setString(3, user.getLastName());
+            preparedStatement.setString(4, user.getEmail());
+            preparedStatement.setString(5, user.getRole());
+            preparedStatement.setInt(6, user.getId());
+            return preparedStatement.executeUpdate() == 1;
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean hasAdmin() {
         try {
             return hasAdmin(getConnection());
