@@ -1,0 +1,196 @@
+-- Fresh-install schema for TourismAgencySystem.
+--
+-- This file is intentionally plain UTF-8 SQL, contains no exported production data,
+-- and seeds only the fixed lookup values used by the Swing forms. It creates no
+-- users, hotels, rooms, reservations, prices, seasons, or customer records.
+-- Run it only against a newly created, empty database owned by the application role.
+
+BEGIN;
+
+CREATE SEQUENCE public.board_types_id_seq AS integer;
+CREATE TABLE public.board_types (
+    id integer DEFAULT nextval('public.board_types_id_seq'::regclass) NOT NULL,
+    name character varying(50) NOT NULL,
+    CONSTRAINT board_types_pkey PRIMARY KEY (id),
+    CONSTRAINT board_types_name_key UNIQUE (name)
+);
+ALTER SEQUENCE public.board_types_id_seq OWNED BY public.board_types.id;
+
+CREATE SEQUENCE public.hotel_amenities_id_seq AS integer;
+CREATE TABLE public.hotel_amenities (
+    id integer DEFAULT nextval('public.hotel_amenities_id_seq'::regclass) NOT NULL,
+    name character varying(50) NOT NULL,
+    CONSTRAINT hotel_amenities_pkey PRIMARY KEY (id),
+    CONSTRAINT hotel_amenities_name_key UNIQUE (name)
+);
+ALTER SEQUENCE public.hotel_amenities_id_seq OWNED BY public.hotel_amenities.id;
+
+CREATE SEQUENCE public.hotels_id_seq AS integer;
+CREATE TABLE public.hotels (
+    id integer DEFAULT nextval('public.hotels_id_seq'::regclass) NOT NULL,
+    name character varying(255) NOT NULL,
+    phone character varying(20),
+    email character varying(255),
+    stars integer,
+    address_line text,
+    country character varying(100),
+    city character varying(100),
+    district character varying(100),
+    CONSTRAINT hotels_pkey PRIMARY KEY (id),
+    CONSTRAINT hotels_stars_check CHECK (stars >= 1 AND stars <= 5)
+);
+ALTER SEQUENCE public.hotels_id_seq OWNED BY public.hotels.id;
+
+CREATE TABLE public.hotels_board_types (
+    hotel_id integer NOT NULL,
+    board_type_id integer NOT NULL,
+    CONSTRAINT hotels_board_types_pkey PRIMARY KEY (hotel_id, board_type_id),
+    CONSTRAINT hotels_board_types_hotel_id_fkey
+        FOREIGN KEY (hotel_id) REFERENCES public.hotels(id),
+    CONSTRAINT hotels_board_types_board_type_id_fkey
+        FOREIGN KEY (board_type_id) REFERENCES public.board_types(id)
+);
+
+CREATE TABLE public.hotels_hotel_amenities (
+    hotel_id integer NOT NULL,
+    hotel_amenity_id integer NOT NULL,
+    CONSTRAINT hotels_hotel_amenities_pkey PRIMARY KEY (hotel_id, hotel_amenity_id),
+    CONSTRAINT hotels_hotel_amenities_hotel_id_fkey
+        FOREIGN KEY (hotel_id) REFERENCES public.hotels(id),
+    CONSTRAINT hotels_hotel_amenities_hotel_amenity_id_fkey
+        FOREIGN KEY (hotel_amenity_id) REFERENCES public.hotel_amenities(id)
+);
+
+CREATE SEQUENCE public.rooms_id_seq AS integer;
+CREATE TABLE public.rooms (
+    id integer DEFAULT nextval('public.rooms_id_seq'::regclass) NOT NULL,
+    hotel_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    capacity integer NOT NULL,
+    size_sqm integer NOT NULL,
+    stock integer NOT NULL,
+    room_type character varying(50),
+    CONSTRAINT rooms_pkey PRIMARY KEY (id),
+    CONSTRAINT rooms_name_hotel_id_key UNIQUE (name, hotel_id),
+    CONSTRAINT rooms_size_sqm_check CHECK (size_sqm >= 0 AND size_sqm <= 999),
+    CONSTRAINT rooms_hotel_id_fkey FOREIGN KEY (hotel_id) REFERENCES public.hotels(id)
+);
+ALTER SEQUENCE public.rooms_id_seq OWNED BY public.rooms.id;
+
+CREATE SEQUENCE public.reservations_id_seq AS integer;
+CREATE TABLE public.reservations (
+    id integer DEFAULT nextval('public.reservations_id_seq'::regclass) NOT NULL,
+    room_id integer NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    calculated_cost_usd numeric(7,2) NOT NULL,
+    num_adults integer NOT NULL,
+    num_children integer NOT NULL,
+    full_name character varying(255),
+    phone character varying(20),
+    email character varying(255),
+    identification character varying(50),
+    CONSTRAINT reservations_pkey PRIMARY KEY (id),
+    CONSTRAINT reservations_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id),
+    CONSTRAINT reservations_check CHECK (end_date > start_date),
+    CONSTRAINT reservations_calculated_cost_usd_check CHECK (calculated_cost_usd >= 0),
+    CONSTRAINT reservations_num_adults_check CHECK (num_adults >= 1),
+    CONSTRAINT reservations_num_children_check CHECK (num_children >= 0)
+);
+ALTER SEQUENCE public.reservations_id_seq OWNED BY public.reservations.id;
+
+CREATE SEQUENCE public.room_amenities_id_seq AS integer;
+CREATE TABLE public.room_amenities (
+    id integer DEFAULT nextval('public.room_amenities_id_seq'::regclass) NOT NULL,
+    name character varying(50) NOT NULL,
+    CONSTRAINT room_amenities_pkey PRIMARY KEY (id),
+    CONSTRAINT room_amenities_name_key UNIQUE (name)
+);
+ALTER SEQUENCE public.room_amenities_id_seq OWNED BY public.room_amenities.id;
+
+CREATE TABLE public.rooms_room_amenities (
+    room_id integer NOT NULL,
+    room_amenity_id integer NOT NULL,
+    CONSTRAINT rooms_room_amenities_pkey PRIMARY KEY (room_id, room_amenity_id),
+    CONSTRAINT rooms_room_amenities_room_id_fkey
+        FOREIGN KEY (room_id) REFERENCES public.rooms(id),
+    CONSTRAINT rooms_room_amenities_room_amenity_id_fkey
+        FOREIGN KEY (room_amenity_id) REFERENCES public.room_amenities(id)
+);
+
+CREATE SEQUENCE public.seasons_id_seq AS integer;
+CREATE TABLE public.seasons (
+    id integer DEFAULT nextval('public.seasons_id_seq'::regclass) NOT NULL,
+    name character varying(50) NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    rate_multiplier numeric(3,0) DEFAULT 1 NOT NULL,
+    hotel_id integer NOT NULL,
+    CONSTRAINT seasons_pkey PRIMARY KEY (id),
+    CONSTRAINT seasons_check CHECK (end_date > start_date),
+    CONSTRAINT seasons_rate_multiplier_check CHECK (rate_multiplier > 0),
+    CONSTRAINT seasons_hotel_id_fkey FOREIGN KEY (hotel_id) REFERENCES public.hotels(id)
+);
+ALTER SEQUENCE public.seasons_id_seq OWNED BY public.seasons.id;
+
+CREATE SEQUENCE public.room_prices_id_seq AS integer;
+CREATE TABLE public.room_prices (
+    id integer DEFAULT nextval('public.room_prices_id_seq'::regclass) NOT NULL,
+    room_id integer NOT NULL,
+    season_id integer NOT NULL,
+    board_type_id integer NOT NULL,
+    adult_price_usd numeric(10,2) NOT NULL,
+    child_price_usd numeric(10,2) NOT NULL,
+    CONSTRAINT room_prices_pkey PRIMARY KEY (id),
+    CONSTRAINT room_prices_adult_price_usd_check CHECK (adult_price_usd >= 0),
+    CONSTRAINT room_prices_child_price_usd_check CHECK (child_price_usd >= 0),
+    CONSTRAINT fk_room FOREIGN KEY (room_id) REFERENCES public.rooms(id),
+    CONSTRAINT fk_season FOREIGN KEY (season_id) REFERENCES public.seasons(id),
+    CONSTRAINT fk_board_type FOREIGN KEY (board_type_id) REFERENCES public.board_types(id)
+);
+ALTER SEQUENCE public.room_prices_id_seq OWNED BY public.room_prices.id;
+
+CREATE SEQUENCE public.users_id_seq AS integer;
+CREATE TABLE public.users (
+    id integer DEFAULT nextval('public.users_id_seq'::regclass) NOT NULL,
+    username character varying(50) NOT NULL,
+    -- Kept as "password" for compatibility with existing installations. New values
+    -- are versioned PBKDF2 hashes; the application upgrades legacy plaintext on login.
+    password character varying(255) NOT NULL,
+    first_name character varying(50),
+    last_name character varying(50),
+    email character varying(255),
+    role character varying(20) NOT NULL,
+    CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT users_username_key UNIQUE (username),
+    CONSTRAINT users_email_key UNIQUE (email),
+    CONSTRAINT users_role_check CHECK (role IN ('admin', 'staff'))
+);
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+INSERT INTO public.board_types (name) VALUES
+    ('Ultra All-Inclusive'),
+    ('All-Inclusive'),
+    ('Bed and Breakfast'),
+    ('Full Board'),
+    ('Half Board'),
+    ('Bed Only'),
+    ('Full Board without Alcohol');
+
+INSERT INTO public.hotel_amenities (name) VALUES
+    ('Free Parking'),
+    ('Free WiFi'),
+    ('Swimming Pool'),
+    ('Fitness Center'),
+    ('Hotel Concierge'),
+    ('SPA'),
+    ('24/7 Room Service');
+
+INSERT INTO public.room_amenities (name) VALUES
+    ('Television'),
+    ('Minibar'),
+    ('Game Console'),
+    ('Safe'),
+    ('Projector');
+
+COMMIT;

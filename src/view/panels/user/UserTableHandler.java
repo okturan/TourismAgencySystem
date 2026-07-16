@@ -11,7 +11,6 @@ public class UserTableHandler extends BaseTableHandler<AppUser, AppUserManager, 
     private static final String[] HEADERS = {
             "id",
             "username",
-            "password",
             "firstName",
             "lastName",
             "email",
