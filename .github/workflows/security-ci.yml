@@ -38,13 +38,13 @@ jobs:
         env:
           PGPASSWORD: tourism_test_password
         run: |
-          test "$(tr -d '\000' < tourism.sql | wc -c)" -eq "$(wc -c < tourism.sql)"
-          if grep -Eiq '^(COPY|INSERT INTO) public\.(users|hotels|rooms|reservations|room_prices|seasons|hotels_board_types|hotels_hotel_amenities|rooms_room_amenities)' tourism.sql; then
-            echo "Operational data must not be seeded in tourism.sql"
+          test "$(tr -d '\000' < database/schema.sql | wc -c)" -eq "$(wc -c < database/schema.sql)"
+          if grep -Eiq '^(COPY|INSERT INTO) public\.(users|hotels|rooms|reservations|room_prices|seasons|hotels_board_types|hotels_hotel_amenities|rooms_room_amenities)' database/schema.sql; then
+            echo "Operational data must not be seeded in database/schema.sql"
             exit 1
           fi
           psql --host=localhost --port=5432 --username=tourism_app \
-            --dbname=tourism_agency --set=ON_ERROR_STOP=1 --file=tourism.sql
+            --dbname=tourism_agency --set=ON_ERROR_STOP=1 --file=database/schema.sql
 
       - name: Compile Java 14 target
         run: |

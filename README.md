@@ -19,7 +19,7 @@ This project is a comprehensive Hotel Management System built in Java utilizing 
 
 ## Fresh Database Setup
 
-`tourism.sql` is reviewable plain SQL for a newly created empty database. It contains the complete schema and only the fixed board-type and amenity lookups used by the UI—no users, hotels, rooms, reservations, prices, seasons, or customer records.
+`database/schema.sql` is reviewable plain SQL for a newly created empty database. It contains the complete schema and only the fixed board-type and amenity lookups used by the UI—no users, hotels, rooms, reservations, prices, seasons, or customer records.
 
 Create a dedicated application owner on the same host and port used in `.env.example`. Run the first two commands with an existing local PostgreSQL administrator; the tools prompt for passwords instead of placing them in shell history.
 
@@ -29,7 +29,7 @@ createuser --host=localhost --port=5433 --username=postgres \
 createdb --host=localhost --port=5433 --username=postgres \
   --owner=tourism_app tourism_agency
 psql --host=localhost --port=5433 --username=tourism_app \
-  --dbname=tourism_agency --set=ON_ERROR_STOP=1 --file=tourism.sql
+  --dbname=tourism_agency --set=ON_ERROR_STOP=1 --file=database/schema.sql
 ```
 
 The schema is executed while connected as `tourism_app`, so that role owns its tables and sequences and needs no superuser runtime access or follow-up grants.
@@ -73,9 +73,9 @@ Password hashes use a unique 16-byte salt, a 256-bit key, and 600,000 PBKDF2-HMA
 
 ## Existing Database Migration
 
-Do not run the fresh-install `tourism.sql` against an existing database. Existing installations keep their current schema. On a successful login, a legacy plaintext password is compared without logging and conditionally replaced with a versioned PBKDF2 hash; the conditional update refuses to overwrite a concurrent password change. New and changed passwords are always hashed before persistence.
+Do not run the fresh-install `database/schema.sql` against an existing database. Existing installations keep their current schema. On a successful login, a legacy plaintext password is compared without logging and conditionally replaced with a versioned PBKDF2 hash; the conditional update refuses to overwrite a concurrent password change. New and changed passwords are always hashed before persistence.
 
-The former custom-format database archive was removed from the current branch because it contained plaintext user passwords and reservation-shaped personal data. Those bytes remain in earlier Git history; this change does not claim a destructive history rewrite or credential rotation.
+The former custom-format `tourism.sql` archive was removed from the current branch because it contained plaintext user passwords and reservation-shaped personal data. Those bytes remain in earlier Git history; this change does not claim a destructive history rewrite or credential rotation.
 
 ## Verification
 
