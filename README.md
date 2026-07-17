@@ -1,6 +1,10 @@
-# Hotel Management System
+# Tourism Agency System
 
 This project is a comprehensive Hotel Management System built in Java utilizing Swing for the GUI and PostgreSQL for the database. The application enables administrators and staff to manage hotels, rooms, and reservations effectively.
+
+![Tourism Agency System architecture and data model](docs/tourism-agency-architecture.svg)
+
+The diagram is derived from the current Swing views, manager/DAO boundaries, security code, and `database/schema.sql`; it is architecture evidence, not a claim that the desktop application is hosted publicly.
 
 ## Features
 
@@ -95,6 +99,12 @@ java -ea -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11
 - **Swing**: For GUI components.
 - **LGoodDatePicker**: For date picker components in the user interface.
 - **JDBC**: For database connectivity.
+
+## Architecture
+
+The UI is role-specific: administrators reach user and hotel inventory workflows, while staff reach room search, pricing, and reservation workflows. Swing views delegate business rules to managers, managers use focused JDBC DAOs, and DAOs hydrate entity objects from PostgreSQL. Password hashing and role routing sit beside that request path instead of inside presentation components.
+
+The schema keeps hotel inventory, seasons, board types, and room prices separate so the same room can carry different adult and child prices across seasonal and meal-plan combinations. Reservations reference rooms and store the accepted date, guest, and calculated-cost snapshot. Database constraints protect date ordering, non-negative prices, guest minimums, hotel-star bounds, unique users, and allowed roles.
 
 ## Project Structure
 - `core`: Contains core functionality such as database management and helper utility functions.
