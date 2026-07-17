@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title description">
+  <title id="title">Tourism Agency System architecture and data model</title>
+  <desc id="description">A two-panel diagram showing administrator and staff workflows through Swing views, business managers, JDBC data access, PostgreSQL, and the core hotel, room, season, pricing, reservation, and user relationships.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef4ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#17233d" flood-opacity="0.11"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .heading { font: 700 29px Arial, Helvetica, sans-serif; fill: #17233d; }
+      .subtitle { font: 400 15px Arial, Helvetica, sans-serif; fill: #64748b; }
+      .panel-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #17233d; }
+      .box-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #17233d; }
+      .box-copy { font: 400 11.5px Arial, Helvetica, sans-serif; fill: #526079; }
+      .entity-title { font: 700 12.5px Arial, Helvetica, sans-serif; fill: #17233d; }
+      .entity-copy { font: 400 10.5px Arial, Helvetica, sans-serif; fill: #64748b; }
+      .label { font: 600 10.5px Arial, Helvetica, sans-serif; fill: #526079; }
+      .flow { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+      .relation { fill: none; stroke: #94a3b8; stroke-width: 1.5; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#background)"/>
+  <circle cx="1170" cy="60" r="150" fill="#dbeafe" opacity="0.55"/>
+  <circle cx="65" cy="690" r="170" fill="#ffedd5" opacity="0.55"/>
+
+  <text x="60" y="57" class="heading">Tourism Agency System</text>
+  <text x="60" y="84" class="subtitle">Role-aware Swing workflows, explicit business boundaries, and a reviewable PostgreSQL schema</text>
+
+  <g filter="url(#shadow)">
+    <rect x="50" y="116" width="560" height="548" rx="18" fill="#ffffff"/>
+    <rect x="630" y="116" width="600" height="548" rx="18" fill="#ffffff"/>
+  </g>
+
+  <text x="78" y="154" class="panel-title">Runtime request flow</text>
+  <text x="658" y="154" class="panel-title">Core persistence model</text>
+
+  <g>
+    <rect x="80" y="184" width="145" height="92" rx="13" fill="#fff7ed" stroke="#fb923c" stroke-width="1.5"/>
+    <text x="100" y="211" class="box-title">Administrator</text>
+    <text x="100" y="235" class="box-copy">Users · hotels</text>
+    <text x="100" y="254" class="box-copy">Seasons · amenities</text>
+
+    <rect x="80" y="305" width="145" height="92" rx="13" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="100" y="332" class="box-title">Staff</text>
+    <text x="100" y="356" class="box-copy">Room search · prices</text>
+    <text x="100" y="375" class="box-copy">Reservations</text>
+
+    <rect x="275" y="184" width="142" height="213" rx="13" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="295" y="213" class="box-title">Swing views</text>
+    <text x="295" y="240" class="box-copy">LoginView</text>
+    <text x="295" y="263" class="box-copy">AdminView</text>
+    <text x="295" y="286" class="box-copy">StaffView</text>
+    <text x="295" y="309" class="box-copy">Hotel panels</text>
+    <text x="295" y="332" class="box-copy">Room panels</text>
+    <text x="295" y="355" class="box-copy">Reservation forms</text>
+    <text x="295" y="378" class="box-copy">Keyboard/UI state</text>
+
+    <rect x="467" y="184" width="113" height="213" rx="13" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5"/>
+    <text x="486" y="213" class="box-title">Managers</text>
+    <text x="486" y="240" class="box-copy">AppUser</text>
+    <text x="486" y="263" class="box-copy">Hotel</text>
+    <text x="486" y="286" class="box-copy">Room</text>
+    <text x="486" y="309" class="box-copy">Reservation</text>
+    <text x="486" y="344" class="box-copy">validation</text>
+    <text x="486" y="367" class="box-copy">pricing rules</text>
+
+    <path d="M225 230 H265" class="flow"/>
+    <path d="M225 351 H265" class="flow"/>
+    <path d="M417 290 H457" class="flow"/>
+
+    <rect x="80" y="450" width="145" height="99" rx="13" fill="#fdf2f8" stroke="#f472b6" stroke-width="1.5"/>
+    <text x="100" y="478" class="box-title">Security</text>
+    <text x="100" y="503" class="box-copy">PBKDF2 passwords</text>
+    <text x="100" y="524" class="box-copy">Role routing</text>
+
+    <rect x="275" y="450" width="142" height="99" rx="13" fill="#faf5ff" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="295" y="478" class="box-title">DAO layer</text>
+    <text x="295" y="503" class="box-copy">Prepared statements</text>
+    <text x="295" y="524" class="box-copy">Entity hydration</text>
+
+    <rect x="467" y="450" width="113" height="99" rx="13" fill="#eef2ff" stroke="#818cf8" stroke-width="1.5"/>
+    <text x="486" y="478" class="box-title">PostgreSQL</text>
+    <text x="486" y="503" class="box-copy">Explicit env</text>
+    <text x="486" y="524" class="box-copy">configuration</text>
+
+    <path d="M152 397 V440" class="flow"/>
+    <path d="M523 397 V420 H346 V440" class="flow"/>
+    <path d="M417 500 H457" class="flow"/>
+    <path d="M225 500 H265" class="flow"/>
+
+    <rect x="80" y="587" width="500" height="45" rx="10" fill="#17233d"/>
+    <text x="100" y="615" style="font: 600 10.8px Arial, Helvetica, sans-serif; fill: #ffffff;">Boundary: no default credentials · no default admin · no plaintext password display</text>
+  </g>
+
+  <g>
+    <rect x="658" y="184" width="130" height="63" rx="10" fill="#fff7ed" stroke="#fb923c"/>
+    <text x="675" y="208" class="entity-title">hotels</text>
+    <text x="675" y="228" class="entity-copy">location · stars</text>
+
+    <rect x="848" y="184" width="130" height="63" rx="10" fill="#eff6ff" stroke="#60a5fa"/>
+    <text x="865" y="208" class="entity-title">rooms</text>
+    <text x="865" y="228" class="entity-copy">capacity · stock</text>
+
+    <rect x="1038" y="184" width="164" height="63" rx="10" fill="#fdf2f8" stroke="#f472b6"/>
+    <text x="1055" y="208" class="entity-title">reservations</text>
+    <text x="1055" y="228" class="entity-copy">dates · guests · cost</text>
+
+    <path d="M788 216 H838" class="relation"/>
+    <text x="802" y="207" class="label">1:N</text>
+    <path d="M978 216 H1028" class="relation"/>
+    <text x="992" y="207" class="label">1:N</text>
+
+    <rect x="658" y="306" width="130" height="63" rx="10" fill="#f0fdf4" stroke="#4ade80"/>
+    <text x="675" y="330" class="entity-title">seasons</text>
+    <text x="675" y="350" class="entity-copy">date range · rate</text>
+
+    <rect x="848" y="306" width="130" height="63" rx="10" fill="#faf5ff" stroke="#c084fc"/>
+    <text x="865" y="330" class="entity-title">room_prices</text>
+    <text x="865" y="350" class="entity-copy">adult · child</text>
+
+    <rect x="1038" y="306" width="164" height="63" rx="10" fill="#eef2ff" stroke="#818cf8"/>
+    <text x="1055" y="330" class="entity-title">board_types</text>
+    <text x="1055" y="350" class="entity-copy">meal-plan lookup</text>
+
+    <path d="M723 247 V296" class="relation"/>
+    <text x="732" y="278" class="label">1:N</text>
+    <path d="M788 337 H838" class="relation"/>
+    <path d="M913 247 V296" class="relation"/>
+    <path d="M1038 337 H988" class="relation"/>
+
+    <rect x="658" y="428" width="130" height="63" rx="10" fill="#fff7ed" stroke="#fb923c"/>
+    <text x="675" y="452" class="entity-title">hotel amenities</text>
+    <text x="675" y="472" class="entity-copy">M:N via join table</text>
+
+    <rect x="848" y="428" width="130" height="63" rx="10" fill="#eff6ff" stroke="#60a5fa"/>
+    <text x="865" y="452" class="entity-title">room amenities</text>
+    <text x="865" y="472" class="entity-copy">M:N via join table</text>
+
+    <rect x="1038" y="428" width="164" height="63" rx="10" fill="#fdf2f8" stroke="#f472b6"/>
+    <text x="1055" y="452" class="entity-title">users</text>
+    <text x="1055" y="472" class="entity-copy">admin · staff · hash</text>
+
+    <path d="M675 247 V275 H642 V459 H648" class="relation"/>
+    <path d="M865 247 V285 H818 V459 H838" class="relation"/>
+
+    <rect x="658" y="548" width="544" height="84" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="678" y="576" class="box-title">Database-enforced invariants</text>
+    <text x="678" y="600" class="box-copy">Valid date ranges · non-negative prices · adult guest minimum · bounded hotel stars</text>
+    <text x="678" y="620" class="box-copy">Unique usernames/emails · role allowlist · explicit foreign keys · fixed lookup seeds only</text>
+  </g>
+</svg>
