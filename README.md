@@ -95,6 +95,8 @@ java -ea -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11
 java -ea -cp "/tmp/tourism-agency-tests:postgresql-42.7.3.jar:LGoodDatePicker-11.2.1.jar" core.DatabaseConfigTest
 ```
 
+Potential vulnerabilities should be reported privately according to [SECURITY.md](SECURITY.md), without attaching credentials, personal information, reservation records, or database exports.
+
 ## Libraries Used
 - **Swing**: For GUI components.
 - **LGoodDatePicker**: For date picker components in the user interface.
